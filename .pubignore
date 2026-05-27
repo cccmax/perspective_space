@@ -1,0 +1,35 @@
+# .pubignore fully replaces .gitignore for `pub publish`, so we have to
+# repeat the standard "do-not-publish" rules and then add our own.
+
+# --- Standard Flutter / Dart noise (mirrors .gitignore) ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+**/build/
+**/.dart_tool/
+**/.idea/
+*.iml
+*.ipr
+*.iws
+*.log
+.DS_Store
+pubspec.lock
+**/doc/api/
+/coverage/
+
+# --- Example platform runners (not needed to consume the package) ---
+example/android/
+example/ios/
+example/macos/
+example/windows/
+example/linux/
+example/web/
+
+# --- Example dev-only tooling ---
+example/test/capture/
+example/test/widget_test.dart
+example/.metadata
+
+# --- Source PNG sequences are huge; only the compiled webps ship ---
+**/build/screenshots/
