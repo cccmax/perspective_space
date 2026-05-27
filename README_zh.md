@@ -18,7 +18,8 @@
 
 两个基础组件 + 三个预设，**零第三方依赖**，6 大平台全支持。
 
-[English →](README.md)
+🌐 **[在线 Demo →](https://cccmax.github.io/perspective_space/)** &nbsp;·&nbsp;
+[English →](https://github.com/cccmax/perspective_space/blob/main/README.md)
 
 ---
 

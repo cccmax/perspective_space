@@ -3,7 +3,7 @@ description: >-
   Buttery-smooth 3D perspective and parallax widgets for Flutter.
   Tilt, shake, and stack layers with depth — gesture-driven or auto-animated.
   Zero dependencies, works on every Flutter platform.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/cccmax/perspective_space
 repository: https://github.com/cccmax/perspective_space
 issue_tracker: https://github.com/cccmax/perspective_space/issues

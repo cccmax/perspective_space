@@ -23,7 +23,8 @@
 `perspective_space` gives you depth on every Flutter platform with two
 primitives and three presets — and **zero third-party dependencies**.
 
-[中文文档 →](README_zh.md)
+🌐 **[Live demo →](https://cccmax.github.io/perspective_space/)** &nbsp;·&nbsp;
+[中文文档 →](https://github.com/cccmax/perspective_space/blob/main/README_zh.md)
 
 ---
 
