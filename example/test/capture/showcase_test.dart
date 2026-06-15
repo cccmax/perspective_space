@@ -4,11 +4,12 @@
 // as a 3D-tilted layered card.
 //
 //   flutter test test/capture/showcase_test.dart
-//   # then encode the PNG sequence (img2webp keeps gradients clean, no ghosting):
-//   #   img2webp -loop 0 -d 42 -lossy -q 78 -m 6 \
-//   #     build/screenshots/showcase_*.png -o ../screenshots/showcase.webp
+//   # then encode (render at 1200px, downscale to 512 for crisp text; 20fps):
+//   #   ffmpeg -y -framerate 20 -i build/screenshots/showcase_%03d.png \
+//   #     -vf "scale=512:512:flags=lanczos" -loop 0 -compression_level 6 \
+//   #     -q:v 92 ../screenshots/showcase.webp
 //
-// Output: build/screenshots/showcase_###.png  (72 frames, 600x600, 24fps)
+// Output: build/screenshots/showcase_###.png  (72 frames @ 1200px source)
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -21,8 +22,8 @@ import 'package:perspective_space/perspective_space.dart';
 
 import 'package:example/theme/demo_palette.dart';
 
-const Size _kSize = Size(600, 600);
-const double _kPixelRatio = 1.0; // 600x600 output — plenty for thumbnail/README
+const Size _kSize = Size(600, 600); // logical layout; downscaled to 512 on encode
+const double _kPixelRatio = 2.0; // render at 1200px so the 512 downscale is crisp
 const int _kFrames = 72;
 
 // Orbital sway center.
