@@ -2,9 +2,9 @@
 
 ## 0.1.2
 
-- Added a pub.dev gallery screenshot (`screenshots/showcase.webp`) so the
-  package shows a thumbnail in search results — a statically tilted multi-layer
-  parallax card.
+- Added an animated pub.dev gallery screenshot (`screenshots/showcase.webp`):
+  a multi-layer parallax card swaying in 3D. Its first frame is the hero pose,
+  so the static search-result thumbnail still reads as a tilted, layered card.
 
 ## 0.1.1
 

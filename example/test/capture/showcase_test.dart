@@ -1,11 +1,14 @@
-// Renders a single square showcase frame for the pub.dev thumbnail / README.
-// The scene is statically tilted (no animation) so the very first frame already
-// shows the multi-layer parallax depth — which is what pub.dev displays.
+// Renders the square showcase as an animated frame sequence for the README /
+// pub.dev gallery. The tilt gently sways (multi-layer parallax drifts with it);
+// frame 0 is the hero pose, so the static pub.dev search thumbnail still reads
+// as a 3D-tilted layered card.
 //
 //   flutter test test/capture/showcase_test.dart
+//   # then: ffmpeg the PNG sequence -> screenshots/showcase.webp
 //
-// Output: build/screenshots/showcase.png
+// Output: build/screenshots/showcase_###.png  (64 frames)
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -16,8 +19,16 @@ import 'package:perspective_space/perspective_space.dart';
 
 import 'package:example/theme/demo_palette.dart';
 
-const Size _kSize = Size(760, 760);
+const Size _kSize = Size(600, 600);
 const double _kPixelRatio = 2.0;
+const int _kFrames = 64;
+
+// Hero pose (frame 0) — the tilt the static thumbnail shows.
+const double _baseRotX = -0.16;
+const double _baseRotY = 0.30;
+// Gentle sway amplitude (radians).
+const double _ampX = 0.10;
+const double _ampY = 0.12;
 
 Future<void> _loadRealFonts() async {
   final flutterRoot = Platform.environment['FLUTTER_ROOT'] ??
@@ -53,41 +64,56 @@ void main() {
     addTearDown(tester.view.reset);
 
     final key = GlobalKey();
-    await tester.pumpWidget(
-      MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(fontFamily: 'Roboto'),
-        home: DefaultTextStyle.merge(
-          style: const TextStyle(fontFamily: 'Roboto'),
-          child: Material(
-            type: MaterialType.transparency,
-            child: RepaintBoundary(
-              key: key,
-              child: SizedBox.fromSize(size: _kSize, child: const _Showcase()),
+
+    for (var i = 0; i < _kFrames; i++) {
+      // Full sine period over the sequence -> seamless loop. In-phase sway so
+      // frame 0 sits exactly at the hero pose.
+      final t = 2 * math.pi * i / _kFrames;
+      final rx = _baseRotX + _ampX * math.sin(t);
+      final ry = _baseRotY + _ampY * math.sin(t);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(fontFamily: 'Roboto'),
+          home: DefaultTextStyle.merge(
+            style: const TextStyle(fontFamily: 'Roboto'),
+            child: Material(
+              type: MaterialType.transparency,
+              child: RepaintBoundary(
+                key: key,
+                child: SizedBox.fromSize(
+                  size: _kSize,
+                  child: _Showcase(rotateX: rx, rotateY: ry),
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 16));
+      );
+      await tester.pump();
 
-    final boundary =
-        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final bytes = await tester.runAsync<Uint8List?>(() async {
-      final image = await boundary.toImage(pixelRatio: _kPixelRatio);
-      final data = await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
-      return data?.buffer.asUint8List();
-    });
-    if (bytes == null) fail('Failed to encode showcase frame');
-    File('build/screenshots/showcase.png').writeAsBytesSync(bytes);
-    stdout.writeln('wrote build/screenshots/showcase.png');
+      final boundary =
+          key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final bytes = await tester.runAsync<Uint8List?>(() async {
+        final image = await boundary.toImage(pixelRatio: _kPixelRatio);
+        final data = await image.toByteData(format: ui.ImageByteFormat.png);
+        image.dispose();
+        return data?.buffer.asUint8List();
+      });
+      if (bytes == null) fail('Failed to encode showcase frame $i');
+      File('build/screenshots/showcase_${i.toString().padLeft(3, '0')}.png')
+          .writeAsBytesSync(bytes);
+    }
+    stdout.writeln('wrote $_kFrames showcase frames');
   });
 }
 
 class _Showcase extends StatelessWidget {
-  const _Showcase();
+  const _Showcase({required this.rotateX, required this.rotateY});
+
+  final double rotateX;
+  final double rotateY;
 
   @override
   Widget build(BuildContext context) {
@@ -95,28 +121,16 @@ class _Showcase extends StatelessWidget {
       decoration: const BoxDecoration(gradient: DemoPalette.bg),
       child: Center(
         child: PerspectiveSpace(
-          // Static tilt so the first (and only) frame shows the depth.
-          rotateX: -0.16,
-          rotateY: 0.30,
+          rotateX: rotateX,
+          rotateY: rotateY,
           perspective: 0.0018,
           child: Stack(
             alignment: Alignment.center,
             clipBehavior: Clip.none,
             children: [
-              // 0 — back glow plane (the "ground shadow").
               PerspectiveLayer(elevation: 0, child: _backGlow()),
-              // 1 — the card surface.
               PerspectiveLayer(elevation: 55, child: _card()),
-              // 2 — foreground content.
               PerspectiveLayer(elevation: 120, child: _foreground()),
-              // 3 — a badge popping out for extra depth.
-              PerspectiveLayer(
-                elevation: 185,
-                child: Align(
-                  alignment: const Alignment(0.92, -0.92),
-                  child: _badge(),
-                ),
-              ),
             ],
           ),
         ),
@@ -134,7 +148,6 @@ class _Showcase extends StatelessWidget {
             BoxShadow(
               color: DemoPalette.accentPink.withValues(alpha: 0.5),
               blurRadius: 80,
-              spreadRadius: 0,
               offset: const Offset(0, 30),
             ),
           ],
@@ -173,7 +186,8 @@ class _Showcase extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.12),
                       ),
                     ),
-                    child: const Icon(Icons.layers, color: Colors.white, size: 26),
+                    child:
+                        const Icon(Icons.layers, color: Colors.white, size: 26),
                   ),
                   const SizedBox(width: 12),
                   const Text(
@@ -187,9 +201,9 @@ class _Showcase extends StatelessWidget {
                   ),
                 ],
               ),
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'PARALLAX',
                     style: TextStyle(
@@ -248,23 +262,5 @@ class _Showcase extends StatelessWidget {
         height: 14,
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(color: c, shape: BoxShape.circle),
-      );
-
-  Widget _badge() => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-        decoration: BoxDecoration(
-          gradient: DemoPalette.sunset,
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: DemoPalette.glow(DemoPalette.accentYellow, blur: 24),
-        ),
-        child: const Text(
-          '3D',
-          style: TextStyle(
-            color: Color(0xFF2B0E5A),
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1,
-          ),
-        ),
       );
 }
