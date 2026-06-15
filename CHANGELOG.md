@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Added a pub.dev gallery screenshot (`screenshots/showcase.webp`) so the
+  package shows a thumbnail in search results — a statically tilted multi-layer
+  parallax card.
+
 ## 0.1.1
 
 - Switched README cross-links (`中文文档`, `English`) to absolute GitHub URLs

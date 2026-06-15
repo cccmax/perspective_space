@@ -13,6 +13,9 @@
 [![Platforms](https://img.shields.io/badge/platform-iOS%20%7C%20Android%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platform-support)
 
 <p align="center">
+  <img src="https://raw.githubusercontent.com/cccmax/perspective_space/main/screenshots/showcase.webp" width="320" alt="Multi-layer parallax card tilted in 3D"/>
+</p>
+<p align="center">
   <img src="https://raw.githubusercontent.com/cccmax/perspective_space/main/screenshots/basic_tilt.webp" width="160" alt="Basic tilt"/>
   <img src="https://raw.githubusercontent.com/cccmax/perspective_space/main/screenshots/gesture.webp"    width="160" alt="Gesture tilt"/>
   <img src="https://raw.githubusercontent.com/cccmax/perspective_space/main/screenshots/shake.webp"      width="160" alt="Entry shake"/>
