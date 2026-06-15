@@ -24,15 +24,16 @@ import 'package:example/theme/demo_palette.dart';
 
 const Size _kSize = Size(600, 600); // logical layout; downscaled to 512 on encode
 const double _kPixelRatio = 2.0; // render at 1200px so the 512 downscale is crisp
-const int _kFrames = 72;
+const int _kFrames = 40; // 40 frames @ 20fps
+const int _kCycles = 2; // full orbits per loop — bigger per-frame angle = faster
 
 // Orbital sway center.
 const double _baseRotX = -0.15;
 const double _baseRotY = 0.24;
 // Orbit radius (radians). Quadrature (sin/cos) = constant-speed gyration, no
 // stop-and-reverse, so it reads smoother than a back-and-forth sway.
-const double _ampX = 0.08;
-const double _ampY = 0.09;
+const double _ampX = 0.11;
+const double _ampY = 0.13;
 
 Future<void> _loadRealFonts() async {
   final flutterRoot = Platform.environment['FLUTTER_ROOT'] ??
@@ -70,9 +71,9 @@ void main() {
     final key = GlobalKey();
 
     for (var i = 0; i < _kFrames; i++) {
-      // Full period over the sequence -> seamless loop. Quadrature sin/cos
-      // traces a circle in (rx, ry) -> constant-speed orbital tilt.
-      final t = 2 * math.pi * i / _kFrames;
+      // _kCycles full periods over the sequence -> still a seamless loop, but
+      // each frame steps a larger angle so the tilt orbits faster.
+      final t = 2 * math.pi * _kCycles * i / _kFrames;
       final rx = _baseRotX + _ampX * math.sin(t);
       final ry = _baseRotY + _ampY * math.cos(t);
 
