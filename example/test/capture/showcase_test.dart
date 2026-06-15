@@ -4,9 +4,11 @@
 // as a 3D-tilted layered card.
 //
 //   flutter test test/capture/showcase_test.dart
-//   # then: ffmpeg the PNG sequence -> screenshots/showcase.webp
+//   # then encode the PNG sequence (img2webp keeps gradients clean, no ghosting):
+//   #   img2webp -loop 0 -d 42 -lossy -q 78 -m 6 \
+//   #     build/screenshots/showcase_*.png -o ../screenshots/showcase.webp
 //
-// Output: build/screenshots/showcase_###.png  (64 frames)
+// Output: build/screenshots/showcase_###.png  (72 frames, 600x600, 24fps)
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -20,15 +22,16 @@ import 'package:perspective_space/perspective_space.dart';
 import 'package:example/theme/demo_palette.dart';
 
 const Size _kSize = Size(600, 600);
-const double _kPixelRatio = 2.0;
-const int _kFrames = 64;
+const double _kPixelRatio = 1.0; // 600x600 output — plenty for thumbnail/README
+const int _kFrames = 72;
 
-// Hero pose (frame 0) — the tilt the static thumbnail shows.
-const double _baseRotX = -0.16;
-const double _baseRotY = 0.30;
-// Gentle sway amplitude (radians).
-const double _ampX = 0.10;
-const double _ampY = 0.12;
+// Orbital sway center.
+const double _baseRotX = -0.15;
+const double _baseRotY = 0.24;
+// Orbit radius (radians). Quadrature (sin/cos) = constant-speed gyration, no
+// stop-and-reverse, so it reads smoother than a back-and-forth sway.
+const double _ampX = 0.08;
+const double _ampY = 0.09;
 
 Future<void> _loadRealFonts() async {
   final flutterRoot = Platform.environment['FLUTTER_ROOT'] ??
@@ -66,11 +69,11 @@ void main() {
     final key = GlobalKey();
 
     for (var i = 0; i < _kFrames; i++) {
-      // Full sine period over the sequence -> seamless loop. In-phase sway so
-      // frame 0 sits exactly at the hero pose.
+      // Full period over the sequence -> seamless loop. Quadrature sin/cos
+      // traces a circle in (rx, ry) -> constant-speed orbital tilt.
       final t = 2 * math.pi * i / _kFrames;
       final rx = _baseRotX + _ampX * math.sin(t);
-      final ry = _baseRotY + _ampY * math.sin(t);
+      final ry = _baseRotY + _ampY * math.cos(t);
 
       await tester.pumpWidget(
         MaterialApp(
